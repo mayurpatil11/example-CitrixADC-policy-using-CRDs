@@ -117,21 +117,28 @@ e.g. ``https://hotdrink.beverages.com``
 
 ![hotbeverage_webpage](https://user-images.githubusercontent.com/42699135/50677394-987efb00-101f-11e9-87d1-6523b7fbe95a.png)
  
-14. Lets configure responder policy using CRDs which will block the access to coffee.php page
-```
-kubectl create -f /root/yamls/rewrite-responder-policies-deployment.yaml
-kubectl create -f /root/yamls/blacklist_array_of_urls.yaml -n tier-2-adc
-```
+#### Enable Rewrite-Responder for above Sample Application
 
-Now try to access the ``https://hotdrink.beverages.com/coffee.php`` and output should look like:
-![responder-response](https://user-images.githubusercontent.com/42699135/53744657-6ffe6a80-3ec3-11e9-9786-e4bd49edfa81.PNG)
-
-
-15. Lets configure rewrite policy using CRDs which will send the custom header on responde side.
+Now it's time to push rewrite responder policies on VPX through CRD (Custom Resource Definition)
+1.	Deploy the CRD to push rewrite, responder policies in tier-1-adc virtual servers
 ```
-kubectl create -f /root/yamls/add_header_to_response_and_redirect_certain_urls.yaml -n tier-2-adc
+kubectl create -f crd_rewrite_responder.yaml
 ```
+2.	Configure Responder policy on hotdrink.beverages.com to block access to coffee microservice website
+```
+kubectl create -f responderpolicy_hotdrink.yaml -n tier-2-adc
+```
+Once you deploy responder policy ,access coffee beverage php website using ``https://hotdrink.beverages.com/coffee.php`` and output will be as shown below:
 
+![blockpage](https://user-images.githubusercontent.com/42699135/53745271-b4d6d100-3ec4-11e9-8c6b-e1ff79638b41.png)
+ 
+3.	Configure Rewrite policy on colddrink.beverages.com to insert session-id in header
+```
+kubectl create -f rewritepolicy_colddrink.yaml -n tier-2-adc
+```
+Once you deploy rewrite policy, access ``https://colddrink.beverages.com`` and you will find sessionID header being present in HTTP response.
+
+![rewritepage](https://user-images.githubusercontent.com/42699135/53745280-b902ee80-3ec4-11e9-9f6e-d44bb663cf9b.png)
 
 Packet Flow Diagrams
 --------------------
